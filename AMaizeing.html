@@ -1,0 +1,72 @@
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+  <input id="pCode">
+<button onclick="buttonclicked()"> Input your postal code to find out when it's best to water your corn!</button>
+<div id=txtbox1>
+</div>
+<script> 
+function buttonclicked()
+{
+	var postalCode = $("#pCode").val();
+	jQuery.get("https://hackathon.pic.pelmorex.com/api/search/string?keyword=" + postalCode, 
+	function(data, textStatus, jqXHR) {
+		console.log(data);
+		var code = data.code;
+		
+		jQuery.get("https://hackathon.pic.pelmorex.com/api/data/longterm?locationcode=" + code,
+			function(data,textStatus,jqXHR){
+				console.log(data);
+				for (var i = 0; i<14; i++)
+				{
+					var time = data.data[i].time;
+					var temp = parseInt((data.data[i].tempMax)-parseInt(data.data[i].tempMin));
+					var rain = data.data[i].rain;
+					var tempfactor = 1;
+					
+					if (temp >30)
+					{
+						tempfactor = 2;
+					}
+					else if(temp <= 30 && temp >25)
+					{		
+						tempfactor = 1.7;
+					}
+					else if(temp <= 25 && temp >20)
+					{		
+						tempfactor = 1.5;
+					}
+					else if(temp <= 20 && temp >15)
+					{
+						tempfactor = 1.4;
+					}
+					else if(temp <= 15 && temp >10)
+					{
+						tempfactor = 1.3;
+					}
+					else
+					{
+						tempfactor = 1;
+					}
+					
+					var waterreq = tempfactor*(4.34 - rain);
+					$("#txtbox1").append("<div>Day " + (i+1) + ":    Date/Time "+ time + "</div>");
+					if (temp<=8)
+					{
+						$("#txtbox1").append("<div>It's too cold for corn.</div>");
+					}
+					else
+					{
+						$("#txtbox1").append("<div>You will need to irrigate your corn with " + 
+						waterreq + "L of water/m^2 </div>");
+					}
+					
+				}
+			}
+		);
+
+	});
+				
+}
+</script>
